@@ -72,7 +72,7 @@ public class W_DL_OpMode_IMU_v05 extends LinearOpMode {
     BNO055IMU imu;
     BNO055IMU.Parameters imuParameters;
     Orientation angles;
-    W_Datalogger_v05 imuDL;             // can update to v02 or v03
+    W_Datalogger_v05 imuDL;     // edit name to Datalogger, or the name you used
 
     double myHeading;
     int readCount = 0;
@@ -93,7 +93,7 @@ public class W_DL_OpMode_IMU_v05 extends LinearOpMode {
         imuParameters.loggingEnabled = false;
         imu.initialize(imuParameters);
 
-        // Instantiate Datalogger class.
+        // Instantiate Datalogger class.  Edit name as needed.
         imuDL = new W_Datalogger_v05(datalogFilename);
         
         // Instantiate datalog timer.
