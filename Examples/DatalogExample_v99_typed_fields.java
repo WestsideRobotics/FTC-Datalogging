@@ -50,16 +50,16 @@ public class DatalogExample_v01 extends LinearOpMode
         datalog = new Datalog("datalog_02");
 
         // You do not need to fill every field of the datalog
-        // every time you call writeLine(); those fields will simply
-        // contain the last value.
-        datalog.opModeStatus.set("INIT");
-        datalog.writeLine();
+        // every time you call slurp(); those fields will simply
+        // contain the last value
+        datalog.opModeStatus.val = "INIT";
+        datalog.slurp();
 
         telemetry.setMsTransmissionInterval(50);
 
         waitForStart();
 
-        datalog.opModeStatus.set("RUNNING");
+        datalog.opModeStatus.val = "RUNNING";
 
         for (int i = 0; opModeIsActive(); i++)
         {
@@ -71,23 +71,24 @@ public class DatalogExample_v01 extends LinearOpMode
             // does *not* matter! The order is configured inside
             // the Datalog class constructor.
 
-            datalog.loopCounter.set(i);
+            datalog.loopCounter.val = i;
         
-            datalog.motorEncoder.set(lifterMotor.getCurrentPosition());
-            datalog.servoPosition.set(grabberServo.getPosition());
-            datalog.touchPress.set(myTouchSensor.isPressed());
-            datalog.potValue.set(myPotSensor.getVoltage());
-            datalog.totalLight.set(myColorSensor.alpha());
+            datalog.motorEncoder.val = lifterMotor.getCurrentPosition();
+            datalog.servoPosition.val = grabberServo.getPosition();
+            datalog.touchPress.val = (myTouchSensor.isPressed() ? "True" : "False");
+            datalog.potValue.val = myPotSensor.getVoltage();
+            datalog.totalLight.val = myColorSensor.alpha();
+
 
             // Note that the timestamp which goes into the log is taken
-            // when writeLine() is called.
-            datalog.writeLine();
+            // when slurp() is called
+            datalog.slurp();
 
-            telemetry.addData("Lifter Motor Encoder", datalog.motorEncoder);
-            telemetry.addData("Grabber Position (commanded)", "%.2f", datalog.servoPosition);
-            telemetry.addData("Touched", datalog.touchPress);
-            telemetry.addData("Pot. Voltage", "%.2f", datalog.potValue);
-            telemetry.addData("Color Sensor Alpha (total light)", datalog.totalLight);
+            telemetry.addData("Lifter Motor Encoder", datalog.motorEncoder.val);
+            telemetry.addData("Grabber Position (commanded)", "%.2f", datalog.servoPosition.val);
+            telemetry.addData("Touched", datalog.touchPress.val);
+            telemetry.addData("Pot. Voltage", "%.2f", datalog.potValue.val);
+            telemetry.addData("Color Sensor Alpha (total light)", datalog.totalLight.val);
             telemetry.update();
 
             sleep(20);
@@ -100,23 +101,23 @@ public class DatalogExample_v01 extends LinearOpMode
     }
 
     /*
-     * This class encapsulates all the fields that will go into the datalog.
+     * This class encapsulates all the fields that will go into the datalog
      */
     public static class Datalog
     {
         // The underlying datalogger object - it only cares about an array of loggable fields
         private final Datalogger datalogger;
 
-        // These are all of the fields that we want in the datalog.
+        // The all of the fields that we want in the datalog.
         // Note that order here is NOT important. The order is important in the setFields() call below
-        public Datalogger.GenericField opModeStatus = new Datalogger.GenericField("OpModeStatus");
-        public Datalogger.GenericField loopCounter = new Datalogger.GenericField("Loop Counter");
+        public Datalogger.StringField opModeStatus = new Datalogger.StringField("OpModeStatus");
+        public Datalogger.IntField loopCounter = new Datalogger.IntField("Loop Counter");
         
-        public Datalogger.GenericField motorEncoder = new Datalogger.GenericField("Lifter Enc.");
-        public Datalogger.GenericField servoPosition = new Datalogger.GenericField("Grabber Pos.");
-        public Datalogger.GenericField touchPress = new Datalogger.GenericField("Touched");
-        public Datalogger.GenericField potValue = new Datalogger.GenericField("Pot. Value");
-        public Datalogger.GenericField totalLight = new Datalogger.GenericField("Total Light");
+        public Datalogger.IntField motorEncoder = new Datalogger.IntField("Lifter Enc.");
+        public Datalogger.DoubleField servoPosition = new Datalogger.DoubleField("Grabber Pos.", "0.00");
+        public Datalogger.StringField touchPress = new Datalogger.StringField("Touched");
+        public Datalogger.DoubleField potValue = new Datalogger.DoubleField("Pot. Value", "0.00");
+        public Datalogger.IntField totalLight = new Datalogger.IntField("Total Light");
 
         public Datalog(String name)
         {
@@ -129,9 +130,9 @@ public class DatalogExample_v01 extends LinearOpMode
                     // Request an automatic timestamp field
                     .setAutoTimestamp(Datalogger.AutoTimestamp.DECIMAL_SECONDS)
 
-                    // Tell it about the fields we care to log.
+                    // Tell it about the fields we care to log
                     // Note that order *IS* important here! The order in which we list
-                    // the fields is the order in which they will appear in the log.
+                    // the fields is the order in which they will appear in the log
                     .setFields(
                             opModeStatus,
                             loopCounter,
@@ -144,11 +145,11 @@ public class DatalogExample_v01 extends LinearOpMode
                     .build();
         }
 
-        // Tell the datalogger to gather the values of the fields
-        // and write a new line in the log.
-        public void writeLine()
+        // Tell the datalogger to slurp up the values of the fields
+        // and write a new line in the log
+        public void slurp()
         {
-            datalogger.writeLine();
+            datalogger.slurp();
         }
     }
 }
