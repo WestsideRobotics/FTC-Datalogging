@@ -15,6 +15,7 @@ Credit to @Windwoes (https://github.com/Windwoes).
 
 */
 
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -22,7 +23,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-import org.firstinspires.ftc.robotcore.external.Datalogger;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 @TeleOp(name = "Concept Datalogger v01", group = "Datalogging")
@@ -43,11 +43,11 @@ public class ConceptDatalogger extends LinearOpMode
         datalog = new Datalog("datalog_01");
 
         // You do not need to fill every field of the datalog
-        // every time you call slurp(); those fields will simply
-        // contain the last value
-        datalog.opModeStatus.val = "INIT";
-        datalog.battery.val = battery.getVoltage();
-        datalog.slurp();
+        // every time you call writeLine(); those fields will simply
+        // contain the last value.
+        datalog.opModeStatus.set("INIT");
+        datalog.battery.set(battery.getVoltage());
+        datalog.writeLine();
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -57,7 +57,7 @@ public class ConceptDatalogger extends LinearOpMode
 
         waitForStart();
 
-        datalog.opModeStatus.val = "RUNNING";
+        datalog.opModeStatus.set("RUNNING");
 
         for (int i = 0; opModeIsActive(); i++)
         {
@@ -65,18 +65,18 @@ public class ConceptDatalogger extends LinearOpMode
             // does *not* matter! The order is configured inside
             // the Datalog class constructor.
 
-            datalog.loopCounter.val = i;
-            datalog.battery.val = battery.getVoltage();
+            datalog.loopCounter.set(i);
+            datalog.battery.set(battery.getVoltage());
 
             Orientation orientation = imu.getAngularOrientation();
 
-            datalog.yaw.val = orientation.firstAngle;
-            datalog.pitch.val = orientation.secondAngle;
-            datalog.roll.val = orientation.thirdAngle;
+            datalog.yaw.set(orientation.firstAngle);
+            datalog.pitch.set(orientation.secondAngle);
+            datalog.roll.set(orientation.thirdAngle);
 
             // Note that the timestamp which goes into the log is taken
-            // when slurp() is called
-            datalog.slurp();
+            // when writeLine() is called
+            datalog.writeLine();
 
             telemetry.addData("Yaw", orientation.firstAngle);
             telemetry.addData("Pitch", orientation.secondAngle);
@@ -93,21 +93,21 @@ public class ConceptDatalogger extends LinearOpMode
     }
 
     /*
-     * This class encapsulates all the fields that will go into the datalog
+     * This class encapsulates all the fields that will go into the datalog.
      */
     public static class Datalog
     {
         // The underlying datalogger object - it only cares about an array of loggable fields
         private final Datalogger datalogger;
 
-        // The all of the fields that we want in the datalog.
+        // These are all of the fields that we want in the datalog.
         // Note that order here is NOT important. The order is important in the setFields() call below
-        public Datalogger.StringField opModeStatus = new Datalogger.StringField("OpModeStatus");
-        public Datalogger.IntField loopCounter = new Datalogger.IntField("Loop Counter");
-        public Datalogger.DoubleField yaw = new Datalogger.DoubleField("Yaw", "0.00");
-        public Datalogger.DoubleField pitch = new Datalogger.DoubleField("Pitch", "0.00");
-        public Datalogger.DoubleField roll = new Datalogger.DoubleField("Roll", "0.00");
-        public Datalogger.DoubleField battery = new Datalogger.DoubleField("Battery", "0.00");
+        public Datalogger.GenericField opModeStatus = new Datalogger.GenericField("OpModeStatus");
+        public Datalogger.GenericField loopCounter  = new Datalogger.GenericField("Loop Counter");
+        public Datalogger.GenericField yaw          = new Datalogger.GenericField("Yaw");
+        public Datalogger.GenericField pitch        = new Datalogger.GenericField("Pitch");
+        public Datalogger.GenericField roll         = new Datalogger.GenericField("Roll");
+        public Datalogger.GenericField battery      = new Datalogger.GenericField("Battery");
 
         public Datalog(String name)
         {
@@ -122,7 +122,7 @@ public class ConceptDatalogger extends LinearOpMode
 
                     // Tell it about the fields we care to log
                     // Note that order *IS* important here! The order in which we list
-                    // the fields is the order in which they will appear in the log
+                    // the fields is the order in which they will appear in the log.
                     .setFields(
                             opModeStatus,
                             loopCounter,
@@ -134,11 +134,11 @@ public class ConceptDatalogger extends LinearOpMode
                     .build();
         }
 
-        // Tell the datalogger to slurp up the values of the fields
-        // and write a new line in the log
-        public void slurp()
+        // Tell the datalogger to gather the values of the fields
+        // and write a new line in the log.
+        public void writeLine()
         {
-            datalogger.slurp();
+            datalogger.writeLine();
         }
     }
 }
