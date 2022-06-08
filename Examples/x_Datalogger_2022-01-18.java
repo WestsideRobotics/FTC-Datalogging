@@ -1,5 +1,5 @@
 /*
-This Datalogger class is provided for FTC OnBot Java (OBJ) programmers.
+This Datalogger class is provided for FTC OnBot Java programmers.
 
 Most users will not need to edit this class; its methods are called
 from a user's OpMode such as ConceptDatalogger.java or a revised version.
@@ -10,7 +10,7 @@ For instructions, see the tutorial at the FTC Wiki:
 https://github.com/FIRST-Tech-Challenge/FtcRobotController/wiki/Datalogging
 
 
-Android Studio programmers can change the destination filepath at Line 295,
+Android Studio programmers can change the destination filepath at Line 327,
 From: "/sdcard/FIRST/java/src/Datalogs/%s.txt"
 To:   "/sdcard/FIRST/Datalogs/%s.csv"
 This change presumes OnBot Java will not be used to preview or download datalogs;
@@ -21,7 +21,7 @@ Credit to @Windwoes (https://github.com/Windwoes).
 */
 
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.robotcore.external;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
@@ -98,7 +98,7 @@ public class Datalogger
         }
     }
 
-    public void writeLine()
+    public void slurp()
     {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -146,13 +146,11 @@ public class Datalogger
         public abstract void writeToBuffer(StringBuilder out);
     }
 
-    public static class GenericField extends LoggableField
+    public static class StringField extends LoggableField
     {
-        private String str = "";
-        private static final String STR_FALSE = "false";
-        private static final String STR_TRUE = "true";
+        public String val;
 
-        public GenericField(String name)
+        public StringField(String name)
         {
             super(name);
         }
@@ -160,66 +158,27 @@ public class Datalogger
         @Override
         public void writeToBuffer(StringBuilder out)
         {
-            out.append(str);
-        }
-
-        public void set(String string)
-        {
-            str = string;
-        }
-
-        public void set(String format, Object... args)
-        {
-            str = String.format(format, args);
-        }
-
-        public void set(int val)
-        {
-            str = Integer.toString(val);
-        }
-
-        public void set(boolean val)
-        {
-            str = val ? STR_TRUE : STR_FALSE;
-        }
-
-        public void set(byte val)
-        {
-            str = String.format("0x%x", val);
-        }
-
-        public void set(float val)
-        {
-            str = String.format("%.3f", val);
-        }
-
-        // 6-7-22 Add overloaded method with optional format parameter.
-        public void set(String valFormat, float val)
-        {
-            str = String.format(valFormat, val);
-        }
-        
-        public void set(double val)
-        {
-            str = String.format("%.3f", val);
-        }
-        
-        // 6-7-22 Add overloaded method with optional format parameter.
-        public void set(String valFormat, double val)
-        {
-            str = String.format(valFormat, val);
-        }
-                
-        // 6-7-22  Added this method so user OpMode telemetry can display 
-        // field contents (instead of memory address).
-        @Override
-        public String toString()
-        {
-            return str;
+            out.append(val);
         }
     }
 
-    private static class TimestampField extends LoggableField
+    public static class IntField extends LoggableField
+    {
+        public int val = 0;
+
+        public IntField(String name)
+        {
+            super(name);
+        }
+
+        @Override
+        public void writeToBuffer(StringBuilder out)
+        {
+            out.append(val);
+        }
+    }
+
+    public static class TimestampField extends LoggableField
     {
         private long tRef;
         private final DecimalFormat timeFmt = new DecimalFormat("000.000");
@@ -241,6 +200,79 @@ public class Datalogger
             long deltaMs = System.currentTimeMillis() - tRef;
             float delta = deltaMs / 1000f;
             out.append(timeFmt.format(delta));
+        }
+    }
+
+    public static class FloatField extends LoggableField
+    {
+        public float val = 0;
+        private final DecimalFormat decimalFormat;
+
+        public FloatField(String name, String decimalFormatString)
+        {
+            super(name);
+            decimalFormat = new DecimalFormat(decimalFormatString);
+        }
+
+        @Override
+        public void writeToBuffer(StringBuilder out)
+        {
+            out.append(decimalFormat.format(val));
+        }
+    }
+
+    public static class DoubleField extends LoggableField
+    {
+        public double val = 0;
+        private final DecimalFormat decimalFormat;
+
+        public DoubleField(String name, String decimalFormatString)
+        {
+            super(name);
+            decimalFormat = new DecimalFormat(decimalFormatString);
+        }
+
+        @Override
+        public void writeToBuffer(StringBuilder out)
+        {
+            out.append(decimalFormat.format(val));
+        }
+    }
+
+    public static class ByteField extends LoggableField
+    {
+        public enum Format
+        {
+            HEX,
+            uint8_t,
+            int8_t,
+        }
+
+        public byte val = 0;
+        public final Format format;
+        private final static String hexFmt = "0x%X";
+
+        public ByteField(String name, Format format)
+        {
+            super(name);
+            this.format = format;
+        }
+
+        @Override
+        public void writeToBuffer(StringBuilder out)
+        {
+            if (format == Format.HEX)
+            {
+                out.append(String.format(hexFmt, val));
+            }
+            else if (format == Format.uint8_t)
+            {
+                out.append(val & 0xFF);
+            }
+            else if (format == Format.int8_t)
+            {
+                out.append(val);
+            }
         }
     }
 
